@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Table editor</title>
+    <style>
+        .error-txt {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+Your can edit the user:
+<br>
+<form th:method="POST" th:action="@{/edit?id={id}(id=${user.getId()})}" th:object="${user}">
+    <label for="name">Enter name: </label>
+    <input type="text" th:field="*{name}" id="name" required/>
+    <span class="error-txt" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name Error</span>
+    <br>
+    <br>
+    <label for="username">Enter username: </label>
+    <input type="text" th:field="*{username}" id="username" required/>
+    <span class="error-txt" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Name Error</span>
+    <br>
+    <br>
+    <label for="password">Enter password: </label>
+    <input type="text" th:field="*{password}" id="password" required/>
+    <span class="error-txt" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Name Error</span>
+    <br>
+    <br>
+    <label for="role1">Set user role</label>
+    <input type="checkbox" name="ROLE_USER" th:checked="${userRole}" id="role1" />
+    <br>
+    <label for="role2">Set admin role</label>
+    <input type="checkbox" name="ROLE_ADMIN" th:checked="${adminRole}" id="role2" />
+    <br>
+    <br>
+    <input type="submit" value="Update!">
+</form>
+</body>
+</html>
