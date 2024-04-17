@@ -1,5 +1,8 @@
 package ru.kata.spring.boot_security.demo.controller;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -13,78 +16,66 @@ import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import javax.validation.Valid;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Controller
 public class AdminController {
-
-    private static final String REDIRECT_ADMIN = "redirect:/admin";
     private final UserService userService;
     private final RoleService roleService;
+    public static final String REDIRECT_ADMIN = "redirect:/admin";
 
     public AdminController(UserService userService, RoleService roleService) {
         this.userService = userService;
         this.roleService = roleService;
     }
 
+
     @GetMapping("/admin")
     public String adminPage(Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails ud = (UserDetails) authentication.getPrincipal();
+
+        Set<Role> allRoles = new HashSet<>();
+        allRoles.add(new Role("ROLE_USER"));
+        allRoles.add(new Role("ROLE_ADMIN"));
+
+        model.addAttribute("person", new User());
+        model.addAttribute("allRoles", allRoles);
+        model.addAttribute("currentUser", userService.getUserByUsername(ud.getUsername()));
         model.addAttribute("users", userService.getAllUsers());
         return "admin";
     }
-    @GetMapping("/create")
-    public String creator(Model model) {
-        model.addAttribute("user", new User());
-        return "creator";
-    }
 
     @PostMapping("/create")
-    public String create(@ModelAttribute("user") @Valid User user,
+    public String create(@ModelAttribute("person") @Valid User user,
                          BindingResult bindingResult,
-                         @RequestParam(name = "ROLE_USER", defaultValue = "false") boolean userRole,
-                         @RequestParam(name = "ROLE_ADMIN", defaultValue = "false") boolean adminRole) {
+                         @RequestParam("selectedRoles") List<String> selectedRoles) {
         if (bindingResult.hasErrors()) {
-            return "creator";
+            System.out.println("Incorrect create input");
+            return REDIRECT_ADMIN;
         }
 
-        if (userRole) {
-            user.addRole(roleService.getRoleByName("ROLE_USER"));
-        }
-        if (adminRole) {
-            user.addRole(roleService.getRoleByName("ROLE_ADMIN"));
+        for (String roleName : selectedRoles) {
+            user.addRole(roleService.getRoleByName(roleName));
         }
         userService.createUser(user);
         return REDIRECT_ADMIN;
     }
 
-    @GetMapping("/edit")
-    public String editor(@RequestParam(value = "id") long id, Model model) {
-        model.addAttribute("user", userService.getUserById(id));
-        for (Role role : userService.getUserById(id).getRoles()) {
-            if ("ROLE_USER".equals(role.getName())) {
-                model.addAttribute("userRole", true);
-            }
-            if ("ROLE_ADMIN".equals(role.getName())) {
-                model.addAttribute("adminRole", true);
-            }
-        }
-        return "editor";
-    }
-
     @PostMapping("/edit")
-    public String edit(@ModelAttribute("user") @Valid User user,
-                       BindingResult bindingResult,
-                       @RequestParam(value = "id") long id,
-                       @RequestParam(name = "ROLE_USER", defaultValue = "false") boolean userRole,
-                       @RequestParam(name = "ROLE_ADMIN", defaultValue = "false") boolean adminRole) {
-        if (bindingResult.hasErrors()) {
-            return "editor";
-        }
+    public String edit(@RequestParam("id") long id,
+                       @RequestParam("edit_name") @Valid String name,
+                       @RequestParam("edit_lastName") String lastName,
+                       @RequestParam("edit_age") Integer age,
+                       @RequestParam("edit_username") String username,
+                       @RequestParam("edit_password") String password,
+                       @RequestParam("selectedRoles") List<String> selectedRoles) {
+        User user = new User(name, lastName, age, username, password);
 
-        if (userRole) {
-            user.addRole(roleService.getRoleByName("ROLE_USER"));
-        }
-        if (adminRole) {
-            user.addRole(roleService.getRoleByName("ROLE_ADMIN"));
+        for (String roleName : selectedRoles) {
+            user.addRole(roleService.getRoleByName(roleName));
         }
         userService.editUser(id, user);
         return REDIRECT_ADMIN;
