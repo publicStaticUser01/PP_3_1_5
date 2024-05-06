@@ -1,21 +1,10 @@
-package ru.kata.spring.boot_security.demo.models;
+package ru.kata.spring.boot_security.demo.dto;
 
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import javax.persistence.*;
 import javax.validation.constraints.*;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-@Entity
-@Table(name = "users")
-public class User implements UserDetails {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class UserDTO {
     private Long id;
     @Size(min = 2, max = 30, message = "Name should be between 2 and 30 characters")
     @NotBlank(message = "Name should not be empty")
@@ -26,19 +15,18 @@ public class User implements UserDetails {
     @NotNull(message = "Age should not be null")
     @Min(value = 0, message = "Age should be greater then 0")
     private Integer age;
-    @Column(unique = true)
     @Pattern(regexp = "[a-zA-Z0-9]+", message = "Username should be consist of Latin letters and numbers")
     private String username;
     @Size(min = 1, max = 60, message = "Password should be between 1 and 60 characters")
     @NotBlank(message = "Name should not be empty")
     private String password;
-    @ManyToMany(fetch = FetchType.EAGER)
-    private Set<Role> roles = new HashSet<>();
+    private List<String> roles = new ArrayList<>();
 
-    public User() {
+    public UserDTO() {
     }
 
-    public User(String name, String lastName, Integer age, String username, String password) {
+    public UserDTO(Long id, String name, String lastName, Integer age, String username, String password) {
+        this.id = id;
         this.name = name;
         this.lastName = lastName;
         this.age = age;
@@ -46,7 +34,8 @@ public class User implements UserDetails {
         this.password = password;
     }
 
-    public User(String name, String lastName, Integer age, String username, String password, Set<Role> roles) {
+    public UserDTO(Long id, String name, String lastName, Integer age, String username, String password, List<String> roles) {
+        this.id = id;
         this.name = name;
         this.lastName = lastName;
         this.age = age;
@@ -55,7 +44,7 @@ public class User implements UserDetails {
         this.roles = roles;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
@@ -87,7 +76,6 @@ public class User implements UserDetails {
         this.age = age;
     }
 
-    @Override
     public String getUsername() {
         return username;
     }
@@ -96,7 +84,6 @@ public class User implements UserDetails {
         this.username = username;
     }
 
-    @Override
     public String getPassword() {
         return password;
     }
@@ -104,68 +91,29 @@ public class User implements UserDetails {
     public void setPassword(String password) {
         this.password = password;
     }
+    public void addRole(String role) {this.roles.add(role);}
 
-    public Set<Role> getRoles() {
+    public List<String> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(List<String> roles) {
         this.roles = roles;
-    }
-
-    public void addRole(Role role) {this.roles.add(role);}
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return getRoles();
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id) &&
-                Objects.equals(name, user.name) &&
-                Objects.equals(lastName, user.lastName) &&
-                Objects.equals(age, user.age) &&
-                Objects.equals(username, user.username) &&
-                Objects.equals(password, user.password);
     }
 
     @Override
     public int hashCode() {
-        int result = 17;
-        result = (31 * result) ^ Objects.hashCode(id);
-        result = (31 * result) ^ Objects.hashCode(name);
-        result = (31 * result) ^ Objects.hashCode(lastName);
-        result = (31 * result) ^ Objects.hashCode(age);
-        return result;
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 
     @Override
     public String toString() {
-        return "User{" +
+        return "UserDTO{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", lastName='" + lastName + '\'' +

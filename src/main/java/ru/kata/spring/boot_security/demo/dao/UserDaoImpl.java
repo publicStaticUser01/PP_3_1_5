@@ -40,8 +40,8 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public void editUser(Long id, User user) {
-        User userToBeEdit = em.find(User.class, id);
+    public void editUser(User user) {
+        User userToBeEdit = em.find(User.class, user.getId());
         userToBeEdit.setName(user.getName());
         userToBeEdit.setLastName(user.getLastName());
         userToBeEdit.setAge(user.getAge());

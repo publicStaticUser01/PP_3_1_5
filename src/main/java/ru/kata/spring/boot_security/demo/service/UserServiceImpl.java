@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.kata.spring.boot_security.demo.dao.UserDao;
 import ru.kata.spring.boot_security.demo.models.Role;
 import ru.kata.spring.boot_security.demo.models.User;
+import ru.kata.spring.boot_security.demo.util.UserNotFoundException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -59,11 +60,18 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public User getUserById(Long id) {return userDao.getUserById(id);}
+    public User getUserById(Long id) {
+        User foundUser = userDao.getUserById(id);
+        if (foundUser == null) {
+            throw new UserNotFoundException();
+        } else {
+            return foundUser;
+        }
+    }
 
     @Override
     @Transactional
-    public void editUser(Long id, User user) {userDao.editUser(id, user);}
+    public void editUser(User user) {userDao.editUser(user);}
 
     @Override
     @Transactional
